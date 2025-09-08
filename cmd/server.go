@@ -56,6 +56,9 @@ the address is defined in config file`,
 			r.Use(gin.LoggerWithWriter(log.StandardLogger().Out))
 		}
 		r.Use(gin.RecoveryWithWriter(log.StandardLogger().Out))
+		
+		// 添加用户访问日志中间件
+		r.Use(middlewares.AccessLogger())
 
 		server.Init(r)
 		var httpHandler http.Handler = r
@@ -115,6 +118,8 @@ the address is defined in config file`,
 		if conf.Conf.S3.Port != -1 && conf.Conf.S3.Enable {
 			s3r := gin.New()
 			s3r.Use(gin.LoggerWithWriter(log.StandardLogger().Out), gin.RecoveryWithWriter(log.StandardLogger().Out))
+			// 为S3服务器也添加用户访问日志中间件
+			s3r.Use(middlewares.AccessLogger())
 			server.InitS3(s3r)
 			s3Base := fmt.Sprintf("%s:%d", conf.Conf.Scheme.Address, conf.Conf.S3.Port)
 			fmt.Printf("start S3 server @ %s\n", s3Base)
