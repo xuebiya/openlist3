@@ -35,9 +35,13 @@ func (f *MediaFilter) ShouldLog(c *gin.Context, logType LogType) bool {
 	path := c.Request.URL.Path
 	pathLower := strings.ToLower(path)
 	
-	// 检查是否为下载路径（/d/, /p/, /ad/），这些路径始终记录
-	if strings.HasPrefix(path, "/d/") || strings.HasPrefix(path, "/p/") || strings.HasPrefix(path, "/ad/") {
-		return true
+	// 🎯 核心要求：只记录驱动路径（/d/, /p/, /ad/）的媒体文件访问
+	isDrivePath := strings.HasPrefix(path, "/d/") || 
+	               strings.HasPrefix(path, "/p/") || 
+	               strings.HasPrefix(path, "/ad/")
+	
+	if !isDrivePath {
+		return false  // 非驱动路径一律不记录
 	}
 	
 	// 检查是否为图片格式
@@ -58,7 +62,7 @@ func (f *MediaFilter) ShouldLog(c *gin.Context, logType LogType) bool {
 		}
 	}
 	
-	return false
+	return false  // 驱动路径但非媒体格式不记录
 }
 
 // PathFilter 路径过滤器 - 根据路径规则过滤
