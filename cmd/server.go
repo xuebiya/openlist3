@@ -49,12 +49,20 @@ the address is defined in config file`,
 		}
 		r := gin.New()
 
+		// 初始化新的日志系统
+		middlewares.SetupLogging()
+		
 		// 只保留Recovery中间件，不使用Gin默认的日志记录器
-		// 因为我们有自定义的AccessLogger来记录媒体文件访问
 		r.Use(gin.RecoveryWithWriter(log.StandardLogger().Out))
 		
-		// 添加用户访问日志中间件（仅记录图片和视频文件访问）
-		r.Use(middlewares.AccessLogger())
+		// 添加用户上下文中间件（设置用户信息）
+		r.Use(middlewares.UserContextMiddleware())
+		
+		// 添加统一日志中间件（记录访问和错误）
+		r.Use(middlewares.UnifiedLogger())
+		
+		// 添加媒体文件访问日志中间件（仅记录图片和视频文件访问）
+		r.Use(middlewares.MediaLogger())
 
 		server.Init(r)
 		var httpHandler http.Handler = r
