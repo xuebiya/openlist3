@@ -26,16 +26,15 @@ var videoFormats = []string{
 
 // shouldLogAccess 判断是否应该记录访问日志（只记录图片和视频格式）
 func shouldLogAccess(path string) bool {
-	// 检查是否为下载路径（/d/, /p/, /ad/）
+	pathLower := strings.ToLower(path)
+	
+	// 检查是否为下载路径（/d/, /p/, /ad/），这些路径始终记录
 	if strings.HasPrefix(path, "/d/") || strings.HasPrefix(path, "/p/") || strings.HasPrefix(path, "/ad/") {
-		// 下载路径始终记录，因为它们可能包含媒体文件
 		return true
 	}
 	
 	// 检查路径中是否包含媒体文件扩展名
-	pathLower := strings.ToLower(path)
-	
-	// 检查是否为图片格式 - 使用更精确的匹配
+	// 检查是否为图片格式
 	for _, format := range imageFormats {
 		if strings.HasSuffix(pathLower, format) || 
 		   strings.Contains(pathLower, format+"?") || 
@@ -44,7 +43,7 @@ func shouldLogAccess(path string) bool {
 		}
 	}
 	
-	// 检查是否为视频格式 - 使用更精确的匹配
+	// 检查是否为视频格式
 	for _, format := range videoFormats {
 		if strings.HasSuffix(pathLower, format) || 
 		   strings.Contains(pathLower, format+"?") || 
@@ -64,29 +63,20 @@ func AccessLogger() gin.HandlerFunc {
 		// 记录开始时间
 		startTime := time.Now()
 		
+		// 获取访问路径（在处理请求前）
+		path := c.Request.URL.Path
+		
+		// 预先检查是否需要记录日志，避免不必要的处理
+		if !shouldLogAccess(path) {
+			c.Next()
+			return
+		}
+		
 		// 处理请求
 		c.Next()
 		
-		// 获取访问路径
-		path := c.Request.URL.Path
-		
-		// 获取响应状态码，判断是否为302重定向
+		// 获取响应状态码
 		statusCode := c.Writer.Status()
-		
-		// 对于302重定向，检查原始路径是否为媒体文件
-		// 对于其他状态码，直接检查路径
-		shouldLog := false
-		if statusCode == 302 {
-			// 302重定向情况下，检查原始请求路径
-			shouldLog = shouldLogAccess(path)
-		} else {
-			// 非重定向情况下，也检查路径
-			shouldLog = shouldLogAccess(path)
-		}
-		
-		if !shouldLog {
-			return
-		}
 		
 		// 获取当前时间并格式化为中文日期格式
 		now := time.Now()
