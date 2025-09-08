@@ -28,42 +28,23 @@ var videoFormats = []string{
 func shouldLogAccess(path string) bool {
 	// 检查是否为下载路径（/d/, /p/, /ad/）
 	if strings.HasPrefix(path, "/d/") || strings.HasPrefix(path, "/p/") || strings.HasPrefix(path, "/ad/") {
-		// 从路径中提取文件名
-		pathParts := strings.Split(path, "/")
-		if len(pathParts) > 0 {
-			filename := pathParts[len(pathParts)-1]
-			// 检查文件名是否包含查询参数，如果有则去除
-			if idx := strings.Index(filename, "?"); idx > 0 {
-				filename = filename[:idx]
-			}
-			
-			// 检查是否为图片格式
-			for _, format := range imageFormats {
-				if strings.HasSuffix(strings.ToLower(filename), format) {
-					return true
-				}
-			}
-			
-			// 检查是否为视频格式
-			for _, format := range videoFormats {
-				if strings.HasSuffix(strings.ToLower(filename), format) {
-					return true
-				}
-			}
-		}
+		// 下载路径始终记录，因为它们可能包含媒体文件
+		return true
 	}
 	
-	// 对于非下载路径，直接检查路径本身
+	// 检查路径中是否包含媒体文件扩展名
+	pathLower := strings.ToLower(path)
+	
 	// 检查是否为图片格式
 	for _, format := range imageFormats {
-		if strings.HasSuffix(strings.ToLower(path), format) {
+		if strings.Contains(pathLower, format) {
 			return true
 		}
 	}
 	
 	// 检查是否为视频格式
 	for _, format := range videoFormats {
-		if strings.HasSuffix(strings.ToLower(path), format) {
+		if strings.Contains(pathLower, format) {
 			return true
 		}
 	}

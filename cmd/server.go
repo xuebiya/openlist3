@@ -49,15 +49,11 @@ the address is defined in config file`,
 		}
 		r := gin.New()
 
-		// gin log
-		if conf.Conf.Log.Filter.Enable {
-			r.Use(middlewares.FilteredLogger())
-		} else {
-			r.Use(gin.LoggerWithWriter(log.StandardLogger().Out))
-		}
+		// 只保留Recovery中间件，不使用Gin默认的日志记录器
+		// 因为我们有自定义的AccessLogger来记录媒体文件访问
 		r.Use(gin.RecoveryWithWriter(log.StandardLogger().Out))
 		
-		// 添加用户访问日志中间件
+		// 添加用户访问日志中间件（仅记录图片和视频文件访问）
 		r.Use(middlewares.AccessLogger())
 
 		server.Init(r)
