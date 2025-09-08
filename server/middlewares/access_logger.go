@@ -35,20 +35,24 @@ func shouldLogAccess(path string) bool {
 	// 检查路径中是否包含媒体文件扩展名
 	pathLower := strings.ToLower(path)
 	
-	// 检查是否为图片格式
+	// 检查是否为图片格式 - 使用更精确的匹配
 	for _, format := range imageFormats {
-		if strings.Contains(pathLower, format) {
+		if strings.HasSuffix(pathLower, format) || 
+		   strings.Contains(pathLower, format+"?") || 
+		   strings.Contains(pathLower, format+"&") {
 			return true
 		}
 	}
 	
-	// 检查是否为视频格式
+	// 检查是否为视频格式 - 使用更精确的匹配
 	for _, format := range videoFormats {
-		if strings.Contains(pathLower, format) {
+		if strings.HasSuffix(pathLower, format) || 
+		   strings.Contains(pathLower, format+"?") || 
+		   strings.Contains(pathLower, format+"&") {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
